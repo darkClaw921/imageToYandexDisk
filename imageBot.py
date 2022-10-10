@@ -1,10 +1,11 @@
 from loguru import logger
 from dotenv import load_dotenv
 from art import text2art
+#from aiogram.types import FSInputFile
 from aiogram.types.message import ContentType
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
-from aiogram import Bot, types
+from aiogram import Bot, types 
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
 from PIL import Image
@@ -24,13 +25,18 @@ ADMIN_ID = 105431859
 bot = Bot(token=str(tgToken)) 
 dp = Dispatcher(bot,storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
-
+image1 = 'RAMKA_gotovo.png'
 
 @logger.catch
 def build_image(images):
-    watermark = Image.open('image.png')
+    
+    watermark = Image.open(image1)
     img = Image.open(f'{images}.png') 
-    img = img.resize((1200,1800))
+    #img = img.resize((1200,1800))
+    h,w = img.size
+    watermark = watermark.resize((h,h))
+    logger.debug(f'{h} {w}')
+    img = img.crop((0,0,h,h))
     img.paste(watermark, (0, 0),  watermark)
     img.save(f"{images}.png")
     
@@ -38,11 +44,12 @@ def build_image(images):
 @logger.catch
 def upload_image_to_disk(nameImage:str):
     y = yadisk.YaDisk(token=token)
+    path = '/Users/igorgerasimov/Python/DDKGTA/imageToYaDisk'
     try: 
-        y.upload(f'{nameImage}.png', f"/test/{nameImage}.png") # Загружает первый файл
+        y.upload(f'{path}/{nameImage}.png', f"/test/{nameImage}.png") # Загружает первый файл
     except yadisk.exceptions.PathExistsError:
         y.remove(f"/test/{nameImage}.png", permanently=True)
-        y.upload(f'{nameImage}.png', f"/test/{nameImage}.png") # Загружает первый файл
+        y.upload(f'{path}/{nameImage}.png', f"/test/{nameImage}.png") # Загружает первый файл
 
    #y.upload("file2.txt", "/test/file2.txt") # Загружает второй файл
 
@@ -63,8 +70,11 @@ async def handle_docs_photo(message):
     await message.photo[-1].download(f'{name}.png')
     build_image(name)
     upload_image_to_disk(f'{name}')
-    photo = open(f'{name}.png', 'rb')
-    await bot.send_photo(message.chat.id, photo)#f'{name}.png')
+    #photo = open(f'{name}.png', 'rb')
+    photo = open(f'/Users/igorgerasimov/Python/DDKGTA/imageToYaDisk/{name}.png', 'rb')
+    #photo = FSInputFile("{name}.png")
+    await bot.send_photo(message.chat.id, photo)#f'/Users/igorgerasimov/Python/DDKGTA/imageToYaDisk/{name}.png')
+    
     photo.close()
 
 @dp.message_handler(state='firstMsg') 
@@ -94,7 +104,8 @@ async def echo_message(msg: types.Message):
 
 
 if __name__ == '__main__':
-    art = text2art('imager', 'rand')
+    #art = text2art('imager', 'rand')
+    art = text2art('hack ass', 'rand')
     print(art)
     #main()
     executor.start_polling(dp)
