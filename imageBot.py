@@ -25,7 +25,7 @@ ADMIN_ID = 105431859
 bot = Bot(token=str(tgToken)) 
 dp = Dispatcher(bot,storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
-image1 = 'RAMKA_gotovo.png'
+image1 = 'RAMKA5_gotovo.png'
 
 @logger.catch
 def build_image(images):
@@ -66,6 +66,8 @@ def main():
 @dp.message_handler(content_types=['photo'])
 @logger.catch
 async def handle_docs_photo(message):
+    
+    await bot.send_message(message.from_user.id, 'Подождите может занять какое-то время')
     name = message.from_user.id
     await message.photo[-1].download(f'{name}.png')
     build_image(name)
